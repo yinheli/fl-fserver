@@ -15,8 +15,6 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(func=delete_expired_users, args=[app], trigger="interval", hours=1)
 scheduler.start()
 atexit.register(lambda: scheduler.shutdown())
-delete_expired_users(app)
-
 
 def create_response(code, message=None, type_value=None, token=None):
     response = {"code": code}
@@ -74,6 +72,6 @@ def get_info():
 
 
 if __name__ == "__main__":
-    
+
 
     app.run(debug=False, host='0.0.0.0', port=5555)

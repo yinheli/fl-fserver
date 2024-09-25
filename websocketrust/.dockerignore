@@ -1,0 +1,31 @@
+# Rust build artifacts
+/target/
+
+# Cargo.lock file (uncomment if you want to ignore it)
+# Cargo.lock
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*~
+
+# Environment files
+.env
+
+# Log files
+*.log
+
+# Docker-specific files (if any)
+Dockerfile
+docker-compose.yml
+
+# Any other project-specific files or directories to ignore
+# Add them here

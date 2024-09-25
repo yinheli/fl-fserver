@@ -1,0 +1,44 @@
+services:
+
+  fsdownload:
+    image: yinheli/fl-fsdownload:latest
+    pull_policy: always
+    ports:
+      - "5555:5555"
+    volumes:
+      - instance:/app/instance
+    restart: always
+    depends_on:
+      init:
+        condition: service_completed_successfully
+
+  websocket:
+    image: yinheli/fl-websocketrust:latest
+    pull_policy: always
+    ports:
+      - "8765:8765"
+    volumes:
+      - instance:/instance
+    restart: always
+    depends_on:
+      init:
+        condition: service_completed_successfully
+
+  init:
+    image: yinheli/fl-fsdownload:latest
+    pull_policy: always
+    volumes:
+      - instance:/app/instance
+    command:
+      - bash
+      - -c
+      - |
+        if [ ! -f /app/instance/.init_done ]; then
+          python run.py --init-db
+          touch /app/instance/.init_done
+        else
+          echo "init already done"
+        fi
+
+volumes:
+  instance:
