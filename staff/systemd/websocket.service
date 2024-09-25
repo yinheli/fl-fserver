@@ -1,0 +1,13 @@
+[Unit]
+Description=WebSocket Server Application
+After=network.target
+
+[Service]
+WorkingDirectory=/root/app/fsdownload/websocket
+ExecStart=/root/app/fsdownload/websocket/websocket_server
+Restart=always
+User=root
+Environment="TZ=Asia/Shanghai"
+
+[Install]
+WantedBy=multi-user.target

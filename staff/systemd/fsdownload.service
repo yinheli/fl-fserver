@@ -1,0 +1,13 @@
+[Unit]
+Description=FSDownload Application
+After=network.target websocket.service
+
+[Service]
+WorkingDirectory=/root/app/fsdownload
+ExecStart=/root/app/fsdownload/.venv/bin/python3 run.py
+Restart=always
+User=root
+Environment="TZ=Asia/Shanghai"
+
+[Install]
+WantedBy=multi-user.target

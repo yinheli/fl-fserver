@@ -1,0 +1,5 @@
+websockets
+Flask
+flask-sqlalchemy
+bcrypt
+apscheduler

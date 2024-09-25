@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+{% include 'header.html' %}
+
+<head>
+    <title>编辑用户</title>
+</head>
+
+<body>
+    <div class="container form-container">
+        <h3 class="text-primary">编辑用户</h3>
+        <form action='' method="POST">
+            <div class="mb-3">
+                <label for="name" class="form-label">用户名</label>
+                <input type="text" class="form-control" id="name" name="name" value='{{name}}' placeholder="用户名">
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">密码</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="新密码">
+            </div>
+            <div class="mb-3" title="这里设置的过期天数是当时创建或者修改时的时间点开始计算的，不是从当前时间开始计算">
+                <label for="days_to_expire" class="form-label">
+                    过期天数, 0 表示不过期 {% if expired_at %}, 当前记录将于<span class="text-danger">{{ expired_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>过期{% endif %}
+                </label>
+                <input type="number" class="form-control" id="days_to_expire" name="days_to_expire" value="{{days_to_expire}}" placeholder="过期天数">
+            </div>
+            <div class="mb-3">
+                <label for="notes" class="form-label">备注</label>
+                <input type="text" class="form-control" id="notes" name="notes" value='{{notes}}' placeholder="备注">
+            </div>
+            <button type="submit" class="btn btn-info btn-custom">确认</button>
+        </form>
+    </div>
+</body>
+
+</html>

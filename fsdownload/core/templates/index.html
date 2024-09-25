@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+{% include 'header.html' %}
+
+<head>
+    <title>主界面</title>
+</head>
+
+<body>
+    <div class="container form-container">
+        <h3 class="text-primary">新增用户</h3>
+        <form action='/add-user' method="POST">
+            <div class="mb-3">
+                <label for="name" class="form-label">用户名</label>
+                <input type="text" class="form-control" name="name" placeholder="用户名">
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">密码</label>
+                <input type="password" class="form-control" name="password" placeholder="密码">
+            </div>
+            <div class="mb-3">
+                <label for="notes" class="form-label">备注</label>
+                <input type="text" class="form-control" name="notes" placeholder="备注">
+            </div>
+            <div class="mb-3">
+                <label for="days_to_expire" class="form-label">
+                    过期天数, 0 或者不填表示不过期
+                </label>
+                <input type="number" class="form-control" id="days_to_expire" name="days_to_expire" value="" placeholder="过期天数">
+            </div>
+            <button type="submit" class="btn btn-info btn-custom">确认</button>
+        </form>
+    </div>
+
+    <div class="container btn-container">
+        <a href='/logout' class="btn btn-info">退出登录</a>
+        <a href='/change-password' class="btn btn-warning">修改管理密码</a>
+    </div>
+
+    <div class="container table-container">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>名称</th>
+                    <th>token</th>
+                    <th>备注</th>
+                    <th>创建时间</th>
+                    <th>过期时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for id, data_data in data %}
+                <tr>
+                    <td>{{ id }}</td>
+                    <td>{{ data_data.name }}</td>
+                    <td>{{ data_data.token }}</td>
+                    <td>{{ data_data.notes }}</td>
+                    <td>{{ data_data.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td {% if data_data.expired_at %}title="设置的过期天数：{{ (data_data.expired_at - data_data.created_at).days+1 }}"{% endif %}>
+                        {% if data_data.expired_at %}
+                            {{ data_data.expired_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                        {% else %}
+                            不过期
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href='/edit/{{ data_data.id }}' class="btn btn-sm btn-warning">编辑</a>
+                        <a href='/delete/{{ data_data.id }}' class="btn btn-sm btn-danger">删除</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+
+</html>
