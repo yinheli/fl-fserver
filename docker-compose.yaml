@@ -1,0 +1,48 @@
+services:
+
+  fsdownload:
+    build:
+      context: ./fsdownload
+    image: fl-fserver-fsdownload:latest
+    pull_policy: never
+    ports:
+      - "5555:5555"
+    volumes:
+      - instance:/app/instance
+    restart: always
+    depends_on:
+      - init
+
+  websocket:
+    build:
+      context: ./websocketrust
+    image: fl-fserver-websocket:latest
+    pull_policy: never
+    ports:
+      - "8765:8765"
+    volumes:
+      - instance:/instance
+    restart: always
+    depends_on:
+      - init
+
+  init:
+    build:
+      context: ./fsdownload
+    image: fl-fserver-fsdownload:latest
+    pull_policy: never
+    volumes:
+      - instance:/app/instance
+    command:
+      - bash
+      - -c
+      - |
+        if [ ! -f /app/instance/.init_done ]; then
+          python run.py --init-db
+          touch /app/instance/.init_done
+        else
+          echo "init already done"
+        fi
+
+volumes:
+  instance:
