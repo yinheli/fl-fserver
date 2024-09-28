@@ -23,7 +23,7 @@
    - 打开终端或命令提示符
    - 运行以下命令：
      ```bash
-     git clone git@github.com:yinheli/fl-fserver.git
+     git clone https://github.com/yinheli/fl-fserver.git
      ```
    - 这将在当前目录下创建一个名为 "fl-fserver" 的文件夹，包含所有代码
 
