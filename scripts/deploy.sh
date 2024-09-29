@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Deprecated note
+echo "Deprecated, please use containerized deployment solution, refer to docker-compose.yml"
+exit 1
+
 cd $(dirname $0)
 
 root_dir=$(cd .. && pwd)
@@ -51,7 +55,7 @@ fi
 
 
 # restart app
-# copy systemd service file 
+# copy systemd service file
 $scp_cmd staff/systemd/*.service "$user@$host:/etc/systemd/system"
 
 # reload systemd and restart apps
