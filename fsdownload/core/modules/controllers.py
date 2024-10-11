@@ -96,7 +96,7 @@ def edit_page(id):
     user = User.query.get(id)
     if not user:
         return redirect(url_for(ERROR_PAGE, error_message=USER_NOT_FOUND))
-    
+
     days_to_expire = 0
     if user.expired_at is not None:
         days_to_expire = (user.expired_at - user.created_at).days + 1
@@ -137,7 +137,7 @@ def login():
             return redirect(url_for(ERROR_PAGE, error_message=EMPTY_USERNAME_PASSWORD))
 
         admin = Admin.query.filter_by(username=username).first()
-        if admin and bcrypt.checkpw(password.encode('utf-8'), admin.password_hash):
+        if admin and bcrypt.checkpw(password.encode('utf-8'), admin.password_hash.encode('utf-8')):
             session['admin_id'] = admin.id
             return redirect(url_for(INDEX_PAGE))
         else:

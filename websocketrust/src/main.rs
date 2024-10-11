@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sqlx::types::chrono;
-use sqlx::{sqlite::SqlitePoolOptions, Pool, Sqlite};
+use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{mpsc, RwLock};
@@ -47,8 +47,11 @@ async fn main() {
 
     env_logger::init();
 
-    let pool = SqlitePoolOptions::new()
-        .connect("sqlite://../instance/simple.db")
+    let database_url = std::env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set");
+
+    let pool = PgPoolOptions::new()
+        .connect(&database_url)
         .await
         .expect("Failed to connect to the database");
 
@@ -70,8 +73,8 @@ async fn main() {
 
 // Warp filter to pass database connection pool to the request handler
 fn with_db(
-    pool: Pool<Sqlite>,
-) -> impl Filter<Extract = (Pool<Sqlite>,), Error = std::convert::Infallible> + Clone {
+    pool: Pool<Postgres>,
+) -> impl Filter<Extract = (Pool<Postgres>,), Error = std::convert::Infallible> + Clone {
     warp::any().map(move || pool.clone())
 }
 
@@ -83,7 +86,7 @@ fn with_rooms(
 }
 
 // Handles a new websocket connection
-async fn handle_connection(ws: WebSocket, db: Pool<Sqlite>, rooms: Rooms) {
+async fn handle_connection(ws: WebSocket, db: Pool<Postgres>, rooms: Rooms) {
     // rx->client_tx->client_rx->tx
     let (mut tx, mut rx) = ws.split();
     let (client_tx, mut client_rx) = mpsc::unbounded_channel();
@@ -170,7 +173,7 @@ async fn handle_connection(ws: WebSocket, db: Pool<Sqlite>, rooms: Rooms) {
 // Handles the initial message to set up the connection
 async fn handle_initial_message(
     text: &str,
-    db: &Pool<Sqlite>,
+    db: &Pool<Postgres>,
     client_tx: &mpsc::UnboundedSender<Result<Message, warp::Error>>,
     rooms: &Rooms,
 ) -> Result<(String, String, String), Box<dyn Error + Send + Sync>> {
@@ -202,9 +205,9 @@ async fn handle_initial_message(
 }
 
 // Checks if the token exists in the database
-async fn check_token_exists(token: &str, db: &Pool<Sqlite>) -> Result<bool, sqlx::Error> {
+async fn check_token_exists(token: &str, db: &Pool<Postgres>) -> Result<bool, sqlx::Error> {
     let now = chrono::Utc::now().naive_utc();
-    let result: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM user WHERE token = ? AND (expired_at IS NULL OR expired_at > ?)")
+    let result: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM user WHERE token = $1 AND (expired_at IS NULL OR expired_at > $2)")
         .bind(token)
         .bind(now)
         .fetch_one(db)

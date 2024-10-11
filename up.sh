@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 cd $(dirname $0)
 pwd
@@ -44,6 +45,39 @@ if ! command -v docker &> /dev/null; then
   else
     echo "Cannot detect Linux distribution"
     exit 1
+  fi
+fi
+
+# Check if current directory is a git repository
+if [ -d .git ]; then
+  echo "Git repository detected."
+
+  # Check for uncommitted changes
+  if ! git diff-index --quiet HEAD --; then
+    echo "There are uncommitted changes in the repository."
+    read -p "Do you want to stash changes and pull (s), continue without pulling (c), or cancel (x)? (s/c/x): " choice
+    case "$choice" in
+      s|S )
+        git stash
+        git pull --rebase
+        git stash pop
+        ;;
+      c|C )
+        echo "Continuing without pulling. Proceeding with existing code."
+        ;;
+      x|X )
+        echo "Operation cancelled due to uncommitted changes."
+        exit 1
+        ;;
+      * )
+        echo "Invalid input. Cancelling operation."
+        exit 1
+        ;;
+    esac
+  else
+    # No uncommitted changes, proceed with pull
+    echo "No uncommitted changes. Pulling latest changes..."
+    git pull --rebase
   fi
 fi
 

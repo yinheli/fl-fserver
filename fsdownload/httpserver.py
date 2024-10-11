@@ -1,4 +1,4 @@
-from core.modules.controllers import *
+from core.modules.controllers import *  # noqa: F403
 from flask import request, jsonify
 from core.modules.job import delete_expired_users
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -72,6 +72,4 @@ def get_info():
 
 
 if __name__ == "__main__":
-
-
     app.run(debug=False, host='0.0.0.0', port=5555)

@@ -13,7 +13,7 @@ def init_db():
         # init admin user with username: admin, password: 123456
         Admin.query.delete()
         password = bcrypt.hashpw("123456".encode('utf-8'), bcrypt.gensalt())
-        admin = Admin(username='admin', password_hash=password)
+        admin = Admin(username='admin', password_hash=password.decode('utf-8'))
         db.session.add(admin)
         db.session.commit()
 

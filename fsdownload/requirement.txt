@@ -3,3 +3,4 @@ Flask
 flask-sqlalchemy
 bcrypt
 apscheduler
+psycopg2-binary

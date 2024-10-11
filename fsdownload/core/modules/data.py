@@ -10,7 +10,7 @@ class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     name = db.Column(db.String(64), index=True, unique=True)
-    password_hash = db.Column(db.String(60))
+    password_hash = db.Column(db.String(128))
     token = db.Column(db.String(128), unique=True)
     notes = db.Column(db.Text())
     type = db.Column(db.String(10))

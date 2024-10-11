@@ -1,8 +1,31 @@
 services:
 
+  postgresql:
+    image: postgres:17
+    labels:
+      - "logging=promtail"
+    environment:
+      POSTGRES_DB: fsdownload
+      POSTGRES_USER: fsdownload
+      POSTGRES_PASSWORD: fsdownloadpassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # ports:
+    #   - "5432:5432"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fsdownload"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   fsdownload:
     image: yinheli/fl-fsdownload:latest
     pull_policy: always
+    labels:
+      - "logging=promtail"
+    environment:
+      DATABASE_URL: postgresql://fsdownload:fsdownloadpassword@postgresql:5432/fsdownload
     ports:
       - "5555:5555"
     volumes:
@@ -11,10 +34,16 @@ services:
     depends_on:
       init:
         condition: service_completed_successfully
+      postgresql:
+        condition: service_healthy
 
   websocket:
     image: yinheli/fl-websocketrust:latest
     pull_policy: always
+    labels:
+      - "logging=promtail"
+    environment:
+      DATABASE_URL: postgresql://fsdownload:fsdownloadpassword@postgresql:5432/fsdownload
     ports:
       - "8765:8765"
     volumes:
@@ -23,22 +52,77 @@ services:
     depends_on:
       init:
         condition: service_completed_successfully
+      postgresql:
+        condition: service_healthy
 
   init:
     image: yinheli/fl-fsdownload:latest
     pull_policy: always
+    environment:
+      DATABASE_URL: postgresql://fsdownload:fsdownloadpassword@postgresql:5432/fsdownload
     volumes:
       - instance:/app/instance
     command:
       - bash
       - -c
       - |
-        if [ ! -f /app/instance/.init_done ]; then
+        if [ ! -f /app/instance/.init_done-v2 ]; then
+          echo "initializing database"
           python run.py --init-db
-          touch /app/instance/.init_done
+          touch /app/instance/.init_done-v2
         else
           echo "init already done"
         fi
+    depends_on:
+      postgresql:
+        condition: service_healthy
+
+  loki:
+    image: grafana/loki:2.9.2
+    command: -config.file=/etc/loki/local-config.yaml
+    user: "0:0"  # Run as root user
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+    restart: always
+    environment:
+      - LOKI_CONFIG_DIR=/loki/config
+    entrypoint:
+      - sh
+      - -c
+      - |
+        mkdir -p /loki/wal /loki/chunks
+        chown -R loki:loki /loki
+        exec /usr/bin/loki -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    image: grafana/promtail:2.9.2
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail-config.yaml:/etc/promtail/config.yaml
+    command: -config.file=/etc/promtail/config.yaml
+    restart: always
+    depends_on:
+      - loki
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=024a4468470169d0466
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    restart: always
+    depends_on:
+      - loki
 
 volumes:
   instance:
+  postgres_data:
+  grafana_data:
+  loki_data:
