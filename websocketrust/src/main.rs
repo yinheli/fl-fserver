@@ -91,7 +91,7 @@ async fn handle_connection(ws: WebSocket, db: Pool<Postgres>, rooms: Rooms) {
     let (mut tx, mut rx) = ws.split();
     let (client_tx, mut client_rx) = mpsc::unbounded_channel();
     let established = Arc::new(RwLock::new(true));
-    
+
 
     // Spawn a task to send messages to the client
     let estab = established.clone();
@@ -207,7 +207,7 @@ async fn handle_initial_message(
 // Checks if the token exists in the database
 async fn check_token_exists(token: &str, db: &Pool<Postgres>) -> Result<bool, sqlx::Error> {
     let now = chrono::Utc::now().naive_utc();
-    let result: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM user WHERE token = $1 AND (expired_at IS NULL OR expired_at > $2)")
+    let result: (i64,) = sqlx::query_as(r#"SELECT COUNT(*) FROM "user" WHERE token = $1 AND (expired_at IS NULL OR expired_at > $2)"#)
         .bind(token)
         .bind(now)
         .fetch_one(db)

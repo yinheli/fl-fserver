@@ -30,7 +30,7 @@ def validate_form_data(*args):
 
 def hash_password(password):
     md5_hash = hashlib.md5(password.encode()).hexdigest()
-    return bcrypt.hashpw(md5_hash.encode('utf-8'), bcrypt.gensalt())
+    return bcrypt.hashpw(md5_hash.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 
 @app.route('/')
@@ -166,8 +166,8 @@ def change_password():
             return redirect(url_for(ERROR_PAGE, error_message=FIELDS_REQUIRED))
 
         admin = Admin.query.filter_by(username=username).first()
-        if admin and bcrypt.checkpw(old_password.encode('utf-8'), admin.password_hash):
-            admin.password_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+        if admin and bcrypt.checkpw(old_password.encode('utf-8'), admin.password_hash.encode('utf-8')):
+            admin.password_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             db.session.commit()
             return redirect(url_for(LOGIN_PAGE))
         else:

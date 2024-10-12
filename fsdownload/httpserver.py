@@ -40,7 +40,7 @@ def do_login():
         return jsonify(create_response("0", EMPTY_CREDENTIALS_MESSAGE))
 
     user = User.query.filter_by(name=username).first()
-    if user and bcrypt.checkpw(password.encode('utf-8'), user.password_hash):
+    if user and bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
         user.type = type_value  # 保存 type 到数据库
         db.session.commit()
         return jsonify(create_response("1", LOGIN_SUCCESS_MESSAGE, token=user.token))
